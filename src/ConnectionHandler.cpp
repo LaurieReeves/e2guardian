@@ -515,6 +515,7 @@ stat_rec* &dystat)
       //  }
 
         bool firsttime = true;
+        // get header from client, allowing persistency
         if(!header.in(&peerconn, true, true)) {
            if (o.logconerror) {
                if (peerconn.getFD() > -1) {
@@ -533,9 +534,10 @@ stat_rec* &dystat)
            }
             firsttime = false;
             persistPeer = false;
-        }; // get header from client, allowing persistency and breaking on reloadconfig
-
+        } 
+	else {
         ++dystat->reqs;
+	};
 
         //
         // End of set-up section
@@ -1694,7 +1696,7 @@ stat_rec* &dystat)
                     if(!header.out(NULL, &proxysock, __DGHEADER_SENDALL, true)) // send proxy the request
                         cleanThrow("Unable to send header to proxy 1586",peerconn, proxysock);
                     //check the response headers so we can go ssl
-                    if(!proxysock.bcheckForInput(120000))
+                    if(!proxysock.bcheckForInput(o.proxy_timeout))
                         cleanThrow("Unable to get response header from proxy 1589",peerconn, proxysock);
                     if(!docheader.in(&proxysock, persistOutgoing))
                         cleanThrow("Unable to get response header from proxy 1591",peerconn, proxysock);
@@ -2702,8 +2704,7 @@ stat_rec* &dystat)
 #ifdef DGDEBUG
                         j++;
 #endif
-                    }
-
+		    }
                     // Store only those plugins which responded positively to willScanData
                     responsescanners.swap(newplugins);
                 }
